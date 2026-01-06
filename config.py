@@ -14,8 +14,8 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
 # Learn more: https://open-meteo.com/
 
 # Default Settings
-DEFAULT_CITY = os.getenv("DEFAULT_CITY", "London")
-DEFAULT_COUNTRY = os.getenv("DEFAULT_COUNTRY", "UK")
+DEFAULT_CITY = os.getenv("DEFAULT_CITY", "New York")
+DEFAULT_COUNTRY = os.getenv("DEFAULT_COUNTRY", "US")
 
 # Markov Chain Configuration
 MARKOV_ORDER = 2  # Second-order Markov chain

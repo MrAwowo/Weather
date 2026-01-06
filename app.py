@@ -252,8 +252,10 @@ def main():
     with st.sidebar:
         st.header("⚙️ Configuration")
 
-        city = st.text_input("City", value=config.DEFAULT_CITY)
-        country = st.text_input("Country Code", value=config.DEFAULT_COUNTRY, max_chars=2)
+        city = st.text_input("City", value=config.DEFAULT_CITY,
+                            help="Type any city name (e.g., Paris, Tokyo, New York)")
+        country = st.text_input("Country Code (optional)", value=config.DEFAULT_COUNTRY, max_chars=2,
+                               help="2-letter code like US, UK, FR (optional)")
 
         st.divider()
 
@@ -264,7 +266,8 @@ def main():
         st.divider()
 
         st.subheader("📊 Data Settings")
-        historical_days = st.slider("Historical Data (days)", 30, 365, 90)
+        historical_days = st.slider("Historical Data (days)", 30, 365, 180,
+                                   help="More days = better predictions (requires internet)")
 
         st.divider()
 
@@ -361,6 +364,20 @@ def main():
 
                     historical = st.session_state.weather_api.get_historical_data(city, country, start_date, end_date)
 
+                    if not historical or len(historical) == 0:
+                        st.error(f"❌ Could not fetch historical data for {city}. Please check:\n"
+                               f"- City name is spelled correctly\n"
+                               f"- Internet connection is working\n"
+                               f"- Try a major city name")
+                        st.stop()
+
+                    if len(historical) < markov_order + 1:
+                        st.error(f"❌ Not enough historical data to train model.\n"
+                               f"- Got {len(historical)} days of data\n"
+                               f"- Need at least {markov_order + 1} days\n"
+                               f"- Try increasing the 'Historical Data' slider")
+                        st.stop()
+
                     if len(historical) > markov_order:
                         # Train model
                         model = WeatherMarkovChain(order=markov_order)
@@ -376,9 +393,9 @@ def main():
                         if st.session_state.database.enabled:
                             st.session_state.database.save_prediction(city, country, predictions)
 
-                        st.success(f"✅ Generated {prediction_days}-day predictions!")
+                        st.success(f"✅ Generated {prediction_days}-day predictions using {len(historical)} days of historical data!")
                     else:
-                        st.error("Not enough historical data to train model")
+                        st.error(f"❌ Not enough historical data. Got {len(historical)} days, need at least {markov_order + 1}")
 
                 except Exception as e:
                     st.error(f"Error generating predictions: {str(e)}")
