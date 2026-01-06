@@ -205,7 +205,7 @@ CREATE INDEX idx_predictions_created ON weather_predictions(created_at);
 - **Weather API**: Open-Meteo (public, no key required!)
 - **Geocoding**: Geopy (OpenStreetMap Nominatim)
 - **Database**: Supabase (PostgreSQL) - Optional
-- **Additional Libraries**: pandas, numpy, scipy
+- **Additional Libraries**: pandas, numpy, geopy
 
 ## ⚙️ Configuration
 
