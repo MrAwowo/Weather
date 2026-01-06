@@ -235,8 +235,9 @@ def main():
     # Header
     st.markdown('<h1 class="main-header">🌤️ Weather Prediction with Markov Chains</h1>', unsafe_allow_html=True)
 
-    # Mobile install banner (less intrusive, in sidebar)
+    # Sidebar
     with st.sidebar:
+        # Mobile install banner (collapsible, in sidebar)
         if 'hide_install_banner' not in st.session_state:
             st.session_state.hide_install_banner = False
 
@@ -250,8 +251,7 @@ def main():
                     st.session_state.hide_install_banner = True
                     st.rerun()
 
-    # Sidebar
-    with st.sidebar:
+        st.divider()
         st.header("⚙️ Configuration")
 
         city = st.text_input("City", value=config.DEFAULT_CITY,
