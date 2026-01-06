@@ -404,7 +404,28 @@ def main():
                         st.error(f"❌ Not enough historical data. Got {len(historical)} days, need at least {markov_order + 1}")
 
                 except Exception as e:
-                    st.error(f"Error generating predictions: {str(e)}")
+                    st.error(f"❌ Error generating predictions:\n\n{str(e)}")
+
+                    # Show helpful troubleshooting
+                    with st.expander("🔧 Troubleshooting Tips"):
+                        st.write("""
+                        **Common issues:**
+
+                        1. **Geocoding timeout**: The free geocoding service can be slow
+                           - Try waiting a moment and clicking again
+                           - Try without country code
+                           - Try a more specific city name (e.g., "New York City" instead of "New York")
+
+                        2. **No historical data**: The API might be unavailable
+                           - Check your internet connection
+                           - Try a different city to test
+                           - Try reducing the historical data range
+
+                        3. **City not found**:
+                           - Check spelling
+                           - Try English city names
+                           - Use major city names (Valletta, not Malta Island)
+                        """)
 
         # Display predictions
         if st.session_state.predictions:
