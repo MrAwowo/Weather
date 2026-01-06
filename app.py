@@ -10,54 +10,197 @@ import config
 
 # Page configuration
 st.set_page_config(
-    page_title="Weather Prediction with Markov Chains",
+    page_title="Weather Prediction",
     page_icon="🌤️",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="auto",
+    menu_items={
+        'Get Help': 'https://github.com/yourusername/Weather',
+        'Report a bug': 'https://github.com/yourusername/Weather/issues',
+        'About': '# Weather Prediction App\nPowered by Open-Meteo & Markov Chains'
+    }
 )
 
-# Custom CSS for modern design
+# Mobile-responsive CSS
 st.markdown("""
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+<meta name="theme-color" content="#2193b0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Weather Predict">
+<link rel="manifest" href="/manifest.json">
 <style>
+    /* Base styles */
+    :root {
+        --primary-blue: #2193b0;
+        --primary-light: #6dd5ed;
+        --purple: #667eea;
+        --purple-dark: #764ba2;
+        --pink: #f093fb;
+        --red: #f5576c;
+    }
+
+    /* Mobile-first responsive header */
     .main-header {
-        font-size: 3rem;
+        font-size: clamp(1.5rem, 5vw, 3rem);
         font-weight: bold;
-        background: linear-gradient(120deg, #2193b0, #6dd5ed);
+        background: linear-gradient(120deg, var(--primary-blue), var(--primary-light));
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
+        background-clip: text;
         text-align: center;
-        padding: 1rem 0;
+        padding: 0.5rem 0;
+        margin-bottom: 1rem;
     }
+
+    /* Touch-friendly buttons */
+    .stButton>button {
+        background: linear-gradient(120deg, var(--primary-blue), var(--primary-light));
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: bold;
+        font-size: 1rem;
+        min-height: 44px; /* iOS minimum touch target */
+        width: 100%;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .stButton>button:hover {
+        background: linear-gradient(120deg, #1a7a93, #5ac4dc);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(33, 147, 176, 0.4);
+    }
+
+    .stButton>button:active {
+        transform: translateY(0);
+    }
+
+    /* Mobile-optimized cards */
     .metric-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 1.5rem;
-        border-radius: 10px;
+        background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%);
+        padding: 1rem;
+        border-radius: 12px;
         color: white;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        margin-bottom: 0.5rem;
     }
+
     .prediction-card {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        padding: 1rem;
+        background: linear-gradient(135deg, var(--pink) 0%, var(--red) 100%);
+        padding: 0.75rem;
         border-radius: 10px;
         margin: 0.5rem 0;
         color: white;
+        text-align: center;
     }
+
+    /* Info boxes */
     .info-box {
         background: #f0f2f6;
         padding: 1rem;
         border-radius: 8px;
-        border-left: 4px solid #2193b0;
+        border-left: 4px solid var(--primary-blue);
+        margin: 0.5rem 0;
     }
-    .stButton>button {
-        background: linear-gradient(120deg, #2193b0, #6dd5ed);
+
+    /* Mobile sidebar optimization */
+    @media (max-width: 768px) {
+        .main-header {
+            font-size: 1.75rem;
+            padding: 0.5rem 0;
+        }
+
+        /* Larger touch targets on mobile */
+        .stButton>button {
+            padding: 1rem 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        /* Optimize metric display */
+        [data-testid="stMetric"] {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin: 0.25rem 0;
+        }
+
+        /* Stack columns on mobile */
+        [data-testid="column"] {
+            padding: 0.25rem !important;
+        }
+
+        /* Improve tab navigation */
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .stTabs [data-baseweb="tab"] {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.9rem;
+        }
+    }
+
+    /* Tablet optimization */
+    @media (min-width: 769px) and (max-width: 1024px) {
+        .main-header {
+            font-size: 2.5rem;
+        }
+    }
+
+    /* Desktop optimization */
+    @media (min-width: 1025px) {
+        .main-header {
+            font-size: 3rem;
+        }
+    }
+
+    /* Dark mode support */
+    @media (prefers-color-scheme: dark) {
+        .info-box {
+            background: rgba(240, 242, 246, 0.1);
+        }
+    }
+
+    /* Smooth scrolling */
+    html {
+        scroll-behavior: smooth;
+    }
+
+    /* Loading states */
+    .stSpinner > div {
+        border-top-color: var(--primary-blue) !important;
+    }
+
+    /* Improve input fields on mobile */
+    input, select, textarea {
+        font-size: 16px !important; /* Prevents zoom on iOS */
+    }
+
+    /* Weather icon sizing */
+    .weather-icon {
+        font-size: clamp(3rem, 10vw, 5rem);
+    }
+
+    /* Prediction cards grid */
+    .prediction-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 0.75rem;
+        margin: 1rem 0;
+    }
+
+    /* PWA install banner */
+    .install-banner {
+        background: linear-gradient(120deg, var(--primary-blue), var(--primary-light));
         color: white;
-        border: none;
-        padding: 0.5rem 2rem;
-        border-radius: 5px;
-        font-weight: bold;
-    }
-    .stButton>button:hover {
-        background: linear-gradient(120deg, #1a7a93, #5ac4dc);
+        padding: 1rem;
+        border-radius: 12px;
+        margin: 1rem 0;
+        text-align: center;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -91,6 +234,19 @@ def get_weather_icon(condition):
 def main():
     # Header
     st.markdown('<h1 class="main-header">🌤️ Weather Prediction with Markov Chains</h1>', unsafe_allow_html=True)
+
+    # Mobile install banner
+    if 'hide_install_banner' not in st.session_state:
+        st.session_state.hide_install_banner = False
+
+    if not st.session_state.hide_install_banner:
+        col1, col2 = st.columns([4, 1])
+        with col1:
+            st.info("📱 **Mobile App:** Install this on your phone! See [MOBILE_INSTALL.md](MOBILE_INSTALL.md) for instructions.")
+        with col2:
+            if st.button("✕", key="close_banner"):
+                st.session_state.hide_install_banner = True
+                st.rerun()
 
     # Sidebar
     with st.sidebar:

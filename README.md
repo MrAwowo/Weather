@@ -9,12 +9,13 @@ A modern, interactive weather prediction application that uses Markov Chains to 
 
 ## ✨ Features
 
+- 📱 **Mobile PWA** - Install as an app on your phone! Works offline!
 - 🌡️ **Real-time Weather Data** - Fetch current weather from Open-Meteo (no API key!)
 - 📜 **REAL Historical Data** - Access actual historical weather patterns (not simulated!)
 - 🔮 **Markov Chain Predictions** - Probabilistic weather forecasting using historical patterns
 - 📊 **Interactive Visualizations** - Beautiful charts powered by Plotly
 - 💾 **Data Persistence** - Optional Supabase integration for storing observations and predictions
-- 🎨 **Modern UI** - Clean, gradient-based design with responsive layout
+- 🎨 **Modern UI** - Mobile-first responsive design with smooth animations
 - ⚙️ **Configurable** - Adjust prediction days, Markov chain order, and historical data range
 - 🆓 **100% Free** - No API keys, no registration, no limits!
 
@@ -85,6 +86,31 @@ The app uses a **second-order Markov chain** by default, meaning it considers th
    - The app will automatically open at `http://localhost:8501`
 
 That's it! No configuration needed. Start predicting weather immediately! 🚀
+
+## 📱 Mobile Installation
+
+**Install as a mobile app on your phone!**
+
+This is a Progressive Web App (PWA) - it can be installed on your phone's home screen and works like a native app.
+
+### Quick Install:
+
+**iPhone:**
+1. Open in Safari
+2. Tap Share → "Add to Home Screen"
+
+**Android:**
+1. Open in Chrome
+2. Tap Menu → "Add to Home Screen"
+
+**Full instructions:** See [MOBILE_INSTALL.md](MOBILE_INSTALL.md) for detailed deployment and installation guides.
+
+### PWA Features:
+- ✅ Works offline (with cached data)
+- ✅ Full-screen experience
+- ✅ Home screen icon
+- ✅ Push notifications (future)
+- ✅ Auto-updates
 
 ## ⚙️ Optional: Supabase Setup
 
@@ -196,7 +222,7 @@ DEFAULT_COUNTRY = "UK"    # Default country code
 
 ```
 Weather/
-├── app.py                  # Main Streamlit application
+├── app.py                  # Main Streamlit application (mobile-optimized!)
 ├── weather_api.py          # Open-Meteo API client
 ├── markov_predictor.py     # Markov Chain model
 ├── database.py             # Supabase database handler
@@ -204,10 +230,12 @@ Weather/
 ├── requirements.txt        # Python dependencies
 ├── .env.example           # Environment variables template
 ├── .gitignore             # Git ignore rules
-├── .streamlit/            # Streamlit configuration
-│   └── config.toml
+├── .streamlit/            # Streamlit & PWA configuration
+│   ├── config.toml        # App settings (mobile-optimized)
+│   └── manifest.json      # PWA manifest
 ├── README.md              # This file
 ├── SETUP.md               # Detailed setup guide
+├── MOBILE_INSTALL.md      # Mobile installation & deployment guide
 └── run.sh                 # Automated startup script
 ```
 
@@ -282,6 +310,7 @@ This project demonstrates:
 - ✅ **Accessible ML**: No barriers to entry - works out of the box
 - ✅ **Real Data**: Uses actual historical weather data
 - ✅ **Privacy-First**: No API keys = no tracking
+- ✅ **Mobile-First**: PWA works on any device, install as app
 - ✅ **Educational**: Perfect for learning Markov chains and weather prediction
 - ✅ **Production-Ready**: Clean code, good architecture, scalable design
 
