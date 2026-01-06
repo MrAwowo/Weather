@@ -358,11 +358,17 @@ def main():
         if st.button("🚀 Generate Predictions", use_container_width=True):
             with st.spinner("Training Markov Chain and generating predictions..."):
                 try:
+                    # Show progress
+                    progress_text = st.empty()
+                    progress_text.info(f"🔍 Finding location: {city}...")
+
                     # Get historical data from Open-Meteo (real data!)
                     end_date = datetime.now().strftime("%Y-%m-%d")
                     start_date = (datetime.now() - timedelta(days=historical_days)).strftime("%Y-%m-%d")
 
+                    progress_text.info(f"📥 Fetching {historical_days} days of weather history...")
                     historical = st.session_state.weather_api.get_historical_data(city, country, start_date, end_date)
+                    progress_text.empty()
 
                     if not historical or len(historical) == 0:
                         st.error(f"❌ Could not fetch historical data for {city}. Please check:\n"
