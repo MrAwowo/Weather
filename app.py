@@ -310,34 +310,33 @@ def main():
             if st.button("🔄 Fetch Current Weather", use_container_width=True):
                 with st.spinner("Fetching weather data..."):
                     try:
-                        # Show progress
-                        progress = st.empty()
-                        progress.info(f"🔍 Finding {city}...")
-
                         data = st.session_state.weather_api.get_current_weather(city, country)
 
                         # Check for errors
                         if "error" in data:
-                            progress.empty()
                             st.error(f"❌ Failed to fetch weather: {data['error']}")
-                            st.stop()
-
-                        progress.info("📥 Getting current conditions...")
-                        parsed = st.session_state.weather_api.parse_current_weather(data)
-
-                        if parsed:
-                            st.session_state.current_weather = parsed
-                            progress.empty()
-                            st.success(f"✅ Got weather for {parsed['city']}!")
-
-                            # Save to database
-                            if st.session_state.database.enabled:
-                                st.session_state.database.save_weather_observation(
-                                    city, country, parsed
-                                )
+                            with st.expander("🔧 Troubleshooting"):
+                                st.write("""
+                                **Try these:**
+                                - Check city name spelling
+                                - Remove country code and try again
+                                - Wait a moment and retry (geocoding can be slow)
+                                - Try a major city to test (London, Paris, Tokyo)
+                                """)
                         else:
-                            progress.empty()
-                            st.error("❌ Could not parse weather data. Please try again.")
+                            parsed = st.session_state.weather_api.parse_current_weather(data)
+
+                            if parsed:
+                                st.session_state.current_weather = parsed
+                                st.success(f"✅ Got weather for {parsed['city']}!")
+
+                                # Save to database
+                                if st.session_state.database.enabled:
+                                    st.session_state.database.save_weather_observation(
+                                        city, country, parsed
+                                    )
+                            else:
+                                st.error("❌ Could not parse weather data. Please try again.")
 
                     except Exception as e:
                         st.error(f"❌ Error fetching weather: {str(e)}")
@@ -350,6 +349,7 @@ def main():
                             - Wait a moment and retry (geocoding can be slow)
                             - Try a major city to test (London, Paris, Tokyo)
                             """)
+                            st.code(str(e), language="text")
 
         if st.session_state.current_weather:
             weather = st.session_state.current_weather
