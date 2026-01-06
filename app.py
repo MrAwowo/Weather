@@ -114,14 +114,10 @@ def main():
 
         # API Status
         st.subheader("🔌 Status")
-        api_configured = bool(config.WEATHER_API_KEY)
         db_configured = st.session_state.database.enabled
 
-        st.write(f"Weather API: {'✅' if api_configured else '❌'}")
-        st.write(f"Database: {'✅' if db_configured else '❌'}")
-
-        if not api_configured:
-            st.warning("⚠️ Set WEATHER_API_KEY in .env file")
+        st.write(f"Weather API: ✅ (Open-Meteo - Public)")
+        st.write(f"Database: {'✅' if db_configured else '❌ (Optional)'}")
 
         st.divider()
 
@@ -132,14 +128,14 @@ def main():
 
             **How it works:**
             1. Fetches current weather data
-            2. Simulates historical weather patterns
+            2. Gets REAL historical weather data
             3. Trains a Markov chain model
             4. Generates probabilistic predictions
 
             **Tech Stack:**
             - Streamlit for UI
-            - OpenWeatherMap API
-            - Supabase for data storage
+            - Open-Meteo API (truly public, no key!)
+            - Supabase for data storage (optional)
             - Python for ML
             """)
 
@@ -203,11 +199,11 @@ def main():
         if st.button("🚀 Generate Predictions", use_container_width=True):
             with st.spinner("Training Markov Chain and generating predictions..."):
                 try:
-                    # Get historical data (simulated for demo)
+                    # Get historical data from Open-Meteo (real data!)
                     end_date = datetime.now().strftime("%Y-%m-%d")
                     start_date = (datetime.now() - timedelta(days=historical_days)).strftime("%Y-%m-%d")
 
-                    historical = st.session_state.weather_api.get_historical_data(0, 0, start_date, end_date)
+                    historical = st.session_state.weather_api.get_historical_data(city, country, start_date, end_date)
 
                     if len(historical) > markov_order:
                         # Train model
@@ -355,16 +351,19 @@ def main():
         st.markdown("""
         ### 🚀 Quick Start
 
-        1. **Get Weather API Key** (Required)
-           - Sign up at [OpenWeatherMap](https://openweathermap.org/api)
-           - Get your free API key
-           - Add to `.env` file: `WEATHER_API_KEY=your_key_here`
+        **No API Key Required!** This app uses [Open-Meteo](https://open-meteo.com/),
+        a truly public weather API. Just run the app!
 
-        2. **Setup Supabase** (Optional - for data persistence)
-           - Create account at [Supabase](https://supabase.com)
-           - Create a new project
-           - Copy URL and anon key to `.env` file
-           - Run the SQL below in Supabase SQL Editor
+        ```bash
+        pip install -r requirements.txt
+        streamlit run app.py
+        ```
+
+        **Optional:** Setup Supabase for data persistence
+        - Create account at [Supabase](https://supabase.com)
+        - Create a new project
+        - Copy URL and anon key to `.env` file
+        - Run the SQL below in Supabase SQL Editor
         """)
 
         st.divider()
@@ -383,12 +382,13 @@ def main():
         st.subheader("📄 Environment Variables")
 
         st.code("""
-# .env file
+# .env file (all optional!)
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_KEY=your-anon-key-here
-WEATHER_API_KEY=your-openweathermap-key
 DEFAULT_CITY=London
 DEFAULT_COUNTRY=UK
+
+# No WEATHER_API_KEY needed - using Open-Meteo!
         """, language="bash")
 
         st.divider()

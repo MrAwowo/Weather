@@ -1,130 +1,261 @@
 import requests
 from datetime import datetime, timedelta
-import config
+from geopy.geocoders import Nominatim
+from geopy.exc import GeocoderTimedOut, GeocoderServiceError
 
 class WeatherAPI:
-    """Fetch weather data from OpenWeatherMap API"""
+    """
+    Fetch weather data from Open-Meteo (truly public, no API key needed)
+    Open-Meteo: https://open-meteo.com/
+    """
 
     def __init__(self):
-        self.api_key = config.WEATHER_API_KEY
-        self.base_url = config.WEATHER_API_BASE_URL
+        self.base_url = "https://api.open-meteo.com/v1"
+        self.geocoder = Nominatim(user_agent="weather_prediction_app")
+
+    def _get_coordinates(self, city, country_code=""):
+        """Get latitude and longitude for a city"""
+        try:
+            location_query = f"{city}, {country_code}" if country_code else city
+            location = self.geocoder.geocode(location_query, timeout=10)
+
+            if location:
+                return {
+                    "lat": location.latitude,
+                    "lon": location.longitude,
+                    "display_name": location.address
+                }
+            return None
+        except (GeocoderTimedOut, GeocoderServiceError) as e:
+            print(f"Geocoding error: {e}")
+            return None
 
     def get_current_weather(self, city, country_code=""):
         """Get current weather for a city"""
         try:
-            location = f"{city},{country_code}" if country_code else city
-            url = f"{self.base_url}/weather"
-            params = {
-                "q": location,
-                "appid": self.api_key,
-                "units": "metric"
-            }
-            response = requests.get(url, params=params)
-            response.raise_for_status()
-            return response.json()
-        except requests.exceptions.RequestException as e:
-            return {"error": str(e)}
+            # Get coordinates
+            coords = self._get_coordinates(city, country_code)
+            if not coords:
+                return {"error": f"Could not find location: {city}"}
 
-    def get_forecast(self, city, country_code="", days=5):
-        """Get weather forecast for a city (up to 5 days)"""
-        try:
-            location = f"{city},{country_code}" if country_code else city
+            # Fetch current weather from Open-Meteo
             url = f"{self.base_url}/forecast"
             params = {
-                "q": location,
-                "appid": self.api_key,
-                "units": "metric"
+                "latitude": coords["lat"],
+                "longitude": coords["lon"],
+                "current": "temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,surface_pressure,wind_speed_10m",
+                "timezone": "auto"
             }
+
             response = requests.get(url, params=params)
             response.raise_for_status()
-            return response.json()
+            data = response.json()
+
+            # Add location info
+            data["location"] = {
+                "city": city,
+                "country": country_code,
+                "lat": coords["lat"],
+                "lon": coords["lon"]
+            }
+
+            return data
+
         except requests.exceptions.RequestException as e:
             return {"error": str(e)}
 
-    def get_historical_data(self, lat, lon, start_date, end_date):
+    def get_forecast(self, city, country_code="", days=7):
+        """Get weather forecast for a city (up to 16 days)"""
+        try:
+            # Get coordinates
+            coords = self._get_coordinates(city, country_code)
+            if not coords:
+                return {"error": f"Could not find location: {city}"}
+
+            # Fetch forecast from Open-Meteo
+            url = f"{self.base_url}/forecast"
+            params = {
+                "latitude": coords["lat"],
+                "longitude": coords["lon"],
+                "daily": "temperature_2m_max,temperature_2m_min,weather_code,precipitation_sum,wind_speed_10m_max",
+                "timezone": "auto",
+                "forecast_days": min(days, 16)
+            }
+
+            response = requests.get(url, params=params)
+            response.raise_for_status()
+            data = response.json()
+
+            # Add location info
+            data["location"] = {
+                "city": city,
+                "country": country_code,
+                "lat": coords["lat"],
+                "lon": coords["lon"]
+            }
+
+            return data
+
+        except requests.exceptions.RequestException as e:
+            return {"error": str(e)}
+
+    def get_historical_data(self, city, country_code, start_date, end_date):
         """
-        Get historical weather data (Note: This requires a paid API subscription)
-        For demo purposes, we'll return simulated data
+        Get REAL historical weather data from Open-Meteo
+        This is truly public and free - no API key needed!
         """
-        # OpenWeatherMap's historical API requires a paid subscription
-        # For this demo, we'll simulate historical data
-        return self._simulate_historical_data(start_date, end_date)
+        try:
+            # Get coordinates
+            coords = self._get_coordinates(city, country_code)
+            if not coords:
+                return []
 
-    def _simulate_historical_data(self, start_date, end_date):
-        """Simulate historical weather data for demonstration"""
-        import random
-        import numpy as np
+            # Open-Meteo historical API
+            url = "https://archive-api.open-meteo.com/v1/archive"
+            params = {
+                "latitude": coords["lat"],
+                "longitude": coords["lon"],
+                "start_date": start_date,
+                "end_date": end_date,
+                "daily": "temperature_2m_mean,weather_code,relative_humidity_2m_mean,wind_speed_10m_mean",
+                "timezone": "auto"
+            }
 
-        current = datetime.strptime(start_date, "%Y-%m-%d")
-        end = datetime.strptime(end_date, "%Y-%m-%d")
+            response = requests.get(url, params=params)
+            response.raise_for_status()
+            data = response.json()
 
-        historical_data = []
-        base_temp = 15  # Base temperature in Celsius
+            # Parse historical data
+            historical_data = []
+            daily = data.get("daily", {})
+            dates = daily.get("time", [])
+            temps = daily.get("temperature_2m_mean", [])
+            weather_codes = daily.get("weather_code", [])
+            humidity = daily.get("relative_humidity_2m_mean", [])
+            wind_speeds = daily.get("wind_speed_10m_mean", [])
 
-        while current <= end:
-            # Simulate temperature with some seasonality
-            day_of_year = current.timetuple().tm_yday
-            seasonal_temp = base_temp + 10 * np.sin(2 * np.pi * day_of_year / 365)
-            temp = seasonal_temp + random.uniform(-5, 5)
+            for i in range(len(dates)):
+                historical_data.append({
+                    "date": dates[i],
+                    "temp": temps[i] if i < len(temps) else 0,
+                    "condition": self._weather_code_to_condition(weather_codes[i] if i < len(weather_codes) else 0),
+                    "humidity": humidity[i] if i < len(humidity) else 0,
+                    "wind_speed": wind_speeds[i] if i < len(wind_speeds) else 0
+                })
 
-            # Simulate weather conditions
-            conditions = ["Clear", "Clouds", "Rain", "Drizzle", "Mist"]
-            weights = [0.4, 0.3, 0.15, 0.1, 0.05]
-            condition = random.choices(conditions, weights=weights)[0]
+            return historical_data
 
-            historical_data.append({
-                "date": current.strftime("%Y-%m-%d"),
-                "temp": round(temp, 1),
-                "condition": condition,
-                "humidity": random.randint(40, 90),
-                "wind_speed": round(random.uniform(0, 15), 1)
-            })
+        except Exception as e:
+            print(f"Error fetching historical data: {e}")
+            return []
 
-            current += timedelta(days=1)
+    def _weather_code_to_condition(self, code):
+        """Convert WMO weather code to condition string"""
+        # WMO Weather interpretation codes
+        if code == 0:
+            return "Clear"
+        elif code in [1, 2, 3]:
+            return "Clouds"
+        elif code in [45, 48]:
+            return "Fog"
+        elif code in [51, 53, 55, 56, 57]:
+            return "Drizzle"
+        elif code in [61, 63, 65, 66, 67, 80, 81, 82]:
+            return "Rain"
+        elif code in [71, 73, 75, 77, 85, 86]:
+            return "Snow"
+        elif code in [95, 96, 99]:
+            return "Thunderstorm"
+        else:
+            return "Clear"
 
-        return historical_data
+    def _weather_code_to_description(self, code):
+        """Convert WMO weather code to detailed description"""
+        descriptions = {
+            0: "clear sky",
+            1: "mainly clear",
+            2: "partly cloudy",
+            3: "overcast",
+            45: "fog",
+            48: "depositing rime fog",
+            51: "light drizzle",
+            53: "moderate drizzle",
+            55: "dense drizzle",
+            61: "slight rain",
+            63: "moderate rain",
+            65: "heavy rain",
+            71: "slight snow",
+            73: "moderate snow",
+            75: "heavy snow",
+            80: "slight rain showers",
+            81: "moderate rain showers",
+            82: "violent rain showers",
+            95: "thunderstorm",
+            96: "thunderstorm with slight hail",
+            99: "thunderstorm with heavy hail"
+        }
+        return descriptions.get(code, "clear sky")
 
     def parse_current_weather(self, data):
-        """Parse current weather data"""
+        """Parse current weather data from Open-Meteo"""
         if "error" in data:
             return None
 
+        current = data.get("current", {})
+        location = data.get("location", {})
+
+        weather_code = current.get("weather_code", 0)
+
         return {
-            "city": data.get("name", "Unknown"),
-            "country": data.get("sys", {}).get("country", ""),
-            "temp": data.get("main", {}).get("temp", 0),
-            "feels_like": data.get("main", {}).get("feels_like", 0),
-            "temp_min": data.get("main", {}).get("temp_min", 0),
-            "temp_max": data.get("main", {}).get("temp_max", 0),
-            "humidity": data.get("main", {}).get("humidity", 0),
-            "pressure": data.get("main", {}).get("pressure", 0),
-            "wind_speed": data.get("wind", {}).get("speed", 0),
-            "description": data.get("weather", [{}])[0].get("description", ""),
-            "condition": data.get("weather", [{}])[0].get("main", ""),
-            "icon": data.get("weather", [{}])[0].get("icon", ""),
-            "timestamp": datetime.fromtimestamp(data.get("dt", 0))
+            "city": location.get("city", "Unknown"),
+            "country": location.get("country", ""),
+            "temp": current.get("temperature_2m", 0),
+            "feels_like": current.get("apparent_temperature", 0),
+            "temp_min": current.get("temperature_2m", 0),  # Current doesn't have min/max
+            "temp_max": current.get("temperature_2m", 0),
+            "humidity": current.get("relative_humidity_2m", 0),
+            "pressure": current.get("surface_pressure", 0),
+            "wind_speed": current.get("wind_speed_10m", 0),
+            "description": self._weather_code_to_description(weather_code),
+            "condition": self._weather_code_to_condition(weather_code),
+            "icon": str(weather_code),
+            "timestamp": datetime.now()
         }
 
     def parse_forecast(self, data):
-        """Parse forecast data"""
+        """Parse forecast data from Open-Meteo"""
         if "error" in data:
             return None
 
+        daily = data.get("daily", {})
+        location = data.get("location", {})
+
         forecast_list = []
-        for item in data.get("list", []):
+        dates = daily.get("time", [])
+        temps_max = daily.get("temperature_2m_max", [])
+        temps_min = daily.get("temperature_2m_min", [])
+        weather_codes = daily.get("weather_code", [])
+        wind_speeds = daily.get("wind_speed_10m_max", [])
+
+        for i in range(len(dates)):
+            temp_max = temps_max[i] if i < len(temps_max) else 0
+            temp_min = temps_min[i] if i < len(temps_min) else 0
+            temp_avg = (temp_max + temp_min) / 2
+            weather_code = weather_codes[i] if i < len(weather_codes) else 0
+
             forecast_list.append({
-                "datetime": datetime.fromtimestamp(item.get("dt", 0)),
-                "temp": item.get("main", {}).get("temp", 0),
-                "temp_min": item.get("main", {}).get("temp_min", 0),
-                "temp_max": item.get("main", {}).get("temp_max", 0),
-                "humidity": item.get("main", {}).get("humidity", 0),
-                "description": item.get("weather", [{}])[0].get("description", ""),
-                "condition": item.get("weather", [{}])[0].get("main", ""),
-                "wind_speed": item.get("wind", {}).get("speed", 0),
+                "datetime": datetime.fromisoformat(dates[i]),
+                "temp": temp_avg,
+                "temp_min": temp_min,
+                "temp_max": temp_max,
+                "humidity": 0,  # Not available in daily forecast
+                "description": self._weather_code_to_description(weather_code),
+                "condition": self._weather_code_to_condition(weather_code),
+                "wind_speed": wind_speeds[i] if i < len(wind_speeds) else 0,
             })
 
         return {
-            "city": data.get("city", {}).get("name", "Unknown"),
-            "country": data.get("city", {}).get("country", ""),
+            "city": location.get("city", "Unknown"),
+            "country": location.get("country", ""),
             "forecast": forecast_list
         }

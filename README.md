@@ -1,29 +1,45 @@
 # 🌤️ Weather Prediction with Markov Chains
 
-A modern, interactive weather prediction application that uses Markov Chains to forecast weather patterns. Built with Streamlit, Python, and Supabase.
+A modern, interactive weather prediction application that uses Markov Chains to forecast weather patterns. Built with Streamlit, Python, and **Open-Meteo** (truly public weather API - **no API key required!**).
 
 ![Weather Prediction App](https://img.shields.io/badge/Python-3.9+-blue.svg)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.29.0-red.svg)
+![Open--Meteo](https://img.shields.io/badge/Weather-Open--Meteo-green.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 
 ## ✨ Features
 
-- 🌡️ **Real-time Weather Data** - Fetch current weather from OpenWeatherMap API
+- 🌡️ **Real-time Weather Data** - Fetch current weather from Open-Meteo (no API key!)
+- 📜 **REAL Historical Data** - Access actual historical weather patterns (not simulated!)
 - 🔮 **Markov Chain Predictions** - Probabilistic weather forecasting using historical patterns
 - 📊 **Interactive Visualizations** - Beautiful charts powered by Plotly
 - 💾 **Data Persistence** - Optional Supabase integration for storing observations and predictions
 - 🎨 **Modern UI** - Clean, gradient-based design with responsive layout
 - ⚙️ **Configurable** - Adjust prediction days, Markov chain order, and historical data range
+- 🆓 **100% Free** - No API keys, no registration, no limits!
 
 ## 🏗️ Architecture
 
 ### How It Works
 
-1. **Data Collection**: Fetches current weather data from OpenWeatherMap API
-2. **Historical Data**: Simulates or retrieves historical weather patterns (90-365 days)
+1. **Data Collection**: Fetches current weather data from Open-Meteo API
+2. **Historical Data**: Retrieves REAL historical weather patterns from Open-Meteo Archive (90-365 days)
 3. **Model Training**: Trains a Markov Chain model on temperature states and weather conditions
 4. **Prediction**: Generates probabilistic forecasts for 1-14 days ahead
 5. **Visualization**: Displays predictions with interactive charts and metrics
+
+### Why Open-Meteo?
+
+**Open-Meteo** is a truly public weather API:
+- ✅ **No API Key Required** - Zero authentication needed
+- ✅ **No Registration** - Start using immediately
+- ✅ **Unlimited Requests** - No rate limits for non-commercial use
+- ✅ **Historical Data Included** - Free access to weather archives
+- ✅ **Global Coverage** - Weather data worldwide
+- ✅ **Open Source** - Community-driven and transparent
+- ✅ **Perfect for Learning** - Anyone can run this app instantly!
+
+Learn more: [open-meteo.com](https://open-meteo.com/)
 
 ### Markov Chain Model
 
@@ -37,14 +53,14 @@ The app uses a **second-order Markov chain** by default, meaning it considers th
 - Hot: > 30°C
 
 **Weather Conditions:**
-- Clear, Clouds, Rain, Drizzle, Thunderstorm, Snow, Mist
+- Clear, Clouds, Rain, Drizzle, Thunderstorm, Snow, Fog
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
 - Python 3.9 or higher
-- OpenWeatherMap API key (free tier available)
+- **No API keys needed!** 🎉
 - Supabase account (optional, for data persistence)
 
 ### Installation
@@ -60,46 +76,32 @@ The app uses a **second-order Markov chain** by default, meaning it considers th
    pip install -r requirements.txt
    ```
 
-3. **Configure environment variables**
-   ```bash
-   cp .env.example .env
-   ```
-
-   Edit `.env` and add your credentials:
-   ```env
-   WEATHER_API_KEY=your_openweathermap_api_key
-   SUPABASE_URL=https://your-project.supabase.co
-   SUPABASE_KEY=your_supabase_anon_key
-   DEFAULT_CITY=London
-   DEFAULT_COUNTRY=UK
-   ```
-
-4. **Run the application**
+3. **Run the application**
    ```bash
    streamlit run app.py
    ```
 
-5. **Open your browser**
+4. **Open your browser**
    - The app will automatically open at `http://localhost:8501`
 
-## 🔑 Getting API Keys
+That's it! No configuration needed. Start predicting weather immediately! 🚀
 
-### OpenWeatherMap (Required)
+## ⚙️ Optional: Supabase Setup
 
-1. Go to [OpenWeatherMap](https://openweathermap.org/api)
-2. Sign up for a free account
-3. Navigate to API Keys section
-4. Copy your API key
-5. Add to `.env` file
-
-### Supabase (Optional)
+If you want to persist weather data and predictions, set up Supabase:
 
 1. Go to [Supabase](https://supabase.com)
 2. Create a new account and project
 3. Go to Project Settings → API
 4. Copy the Project URL and anon/public key
-5. Add to `.env` file
-6. Run the SQL schema (see below)
+5. Create `.env` file:
+   ```env
+   SUPABASE_URL=https://your-project.supabase.co
+   SUPABASE_KEY=your_supabase_anon_key
+   DEFAULT_CITY=London
+   DEFAULT_COUNTRY=UK
+   ```
+6. Run the SQL schema (available in the app's Setup tab)
 
 ## 🗄️ Database Setup (Optional)
 
@@ -174,8 +176,9 @@ CREATE INDEX idx_predictions_created ON weather_predictions(created_at);
 - **Backend**: Python 3.9+
 - **ML Model**: Custom Markov Chain implementation
 - **Data Visualization**: Plotly
-- **Weather API**: OpenWeatherMap
-- **Database**: Supabase (PostgreSQL)
+- **Weather API**: Open-Meteo (public, no key required!)
+- **Geocoding**: Geopy (OpenStreetMap Nominatim)
+- **Database**: Supabase (PostgreSQL) - Optional
 - **Additional Libraries**: pandas, numpy, scipy
 
 ## ⚙️ Configuration
@@ -194,21 +197,25 @@ DEFAULT_COUNTRY = "UK"    # Default country code
 ```
 Weather/
 ├── app.py                  # Main Streamlit application
-├── weather_api.py          # OpenWeatherMap API client
+├── weather_api.py          # Open-Meteo API client
 ├── markov_predictor.py     # Markov Chain model
 ├── database.py             # Supabase database handler
 ├── config.py               # Configuration settings
 ├── requirements.txt        # Python dependencies
 ├── .env.example           # Environment variables template
 ├── .gitignore             # Git ignore rules
-└── README.md              # This file
+├── .streamlit/            # Streamlit configuration
+│   └── config.toml
+├── README.md              # This file
+├── SETUP.md               # Detailed setup guide
+└── run.sh                 # Automated startup script
 ```
 
 ## 🎨 Features Walkthrough
 
 ### Markov Chain Predictions
 The app uses probabilistic modeling to predict weather:
-- Trains on historical patterns
+- Trains on REAL historical weather data
 - Considers temperature states and conditions
 - Generates multi-day forecasts
 - Shows transition probabilities
@@ -219,11 +226,21 @@ The app uses probabilistic modeling to predict weather:
 - Bar charts for condition frequencies
 - Daily prediction cards with icons
 
-### Data Persistence
+### Data Persistence (Optional)
 - Stores weather observations
 - Saves prediction history
 - Enables historical analysis
 - Tracks model accuracy over time
+
+## 🌍 Data Sources
+
+This application uses **Open-Meteo**, a free and open-source weather API:
+
+- **Current Weather**: [Open-Meteo Forecast API](https://open-meteo.com/en/docs)
+- **Historical Data**: [Open-Meteo Archive](https://open-meteo.com/en/docs/historical-weather-api)
+- **Geocoding**: OpenStreetMap Nominatim (via Geopy)
+
+All data sources are completely free with no API keys required!
 
 ## 🤝 Contributing
 
@@ -235,10 +252,11 @@ This project is licensed under the MIT License.
 
 ## 🙏 Acknowledgments
 
-- [OpenWeatherMap](https://openweathermap.org) for weather data API
+- [Open-Meteo](https://open-meteo.com) for providing truly free, public weather data
 - [Streamlit](https://streamlit.io) for the amazing framework
 - [Supabase](https://supabase.com) for database infrastructure
 - [Plotly](https://plotly.com) for interactive visualizations
+- [OpenStreetMap](https://www.openstreetmap.org) for geocoding services
 
 ## 📞 Support
 
@@ -256,7 +274,19 @@ For issues or questions:
 - [ ] Export predictions to CSV/PDF
 - [ ] Mobile responsive design improvements
 - [ ] Multi-language support
+- [ ] Ensemble predictions combining multiple models
+
+## 🎯 Why This Project?
+
+This project demonstrates:
+- ✅ **Accessible ML**: No barriers to entry - works out of the box
+- ✅ **Real Data**: Uses actual historical weather data
+- ✅ **Privacy-First**: No API keys = no tracking
+- ✅ **Educational**: Perfect for learning Markov chains and weather prediction
+- ✅ **Production-Ready**: Clean code, good architecture, scalable design
 
 ---
 
-Made with ❤️ using Streamlit and Python
+Made with ❤️ using Streamlit, Python, and Open-Meteo
+
+**No API keys. No limits. Just weather predictions.** 🌤️

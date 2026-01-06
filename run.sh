@@ -19,14 +19,14 @@ echo "📥 Installing dependencies..."
 pip install -q --upgrade pip
 pip install -q -r requirements.txt
 
-# Check for .env file
+# Create .env file if it doesn't exist (optional, for Supabase)
 if [ ! -f ".env" ]; then
-    echo "⚠️  No .env file found. Creating from template..."
-    cp .env.example .env
-    echo "⚠️  Please edit .env file with your API keys before running!"
-    exit 1
+    echo "ℹ️  No .env file found (this is optional)"
+    echo "ℹ️  The app will work without it!"
+    echo "ℹ️  To setup Supabase later, run: cp .env.example .env"
 fi
 
 # Run the app
 echo "🚀 Launching Streamlit app..."
+echo "✅ No API keys required - using Open-Meteo!"
 streamlit run app.py

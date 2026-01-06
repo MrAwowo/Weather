@@ -4,13 +4,14 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-# Supabase Configuration
+# Supabase Configuration (Optional - for data persistence)
 SUPABASE_URL = os.getenv("SUPABASE_URL", "")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
 
 # Weather API Configuration
-WEATHER_API_KEY = os.getenv("WEATHER_API_KEY", "")
-WEATHER_API_BASE_URL = "https://api.openweathermap.org/data/2.5"
+# Using Open-Meteo - NO API KEY REQUIRED!
+# Open-Meteo is a free, open-source weather API
+# Learn more: https://open-meteo.com/
 
 # Default Settings
 DEFAULT_CITY = os.getenv("DEFAULT_CITY", "London")

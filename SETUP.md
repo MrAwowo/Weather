@@ -2,6 +2,10 @@
 
 Complete setup instructions for the Weather Prediction App.
 
+## 🎉 Great News: No API Key Required!
+
+This app uses **Open-Meteo**, a truly public weather API. You can start using it immediately without any API keys or registration!
+
 ## Step-by-Step Setup
 
 ### 1️⃣ Install Python Dependencies
@@ -17,30 +21,23 @@ chmod +x run.sh
 ./run.sh
 ```
 
-### 2️⃣ Get OpenWeatherMap API Key (Required)
+### 2️⃣ Run the App
 
-1. Visit [https://openweathermap.org/api](https://openweathermap.org/api)
-2. Click "Sign Up" in the top right
-3. Create a free account
-4. Verify your email
-5. Go to [API Keys](https://home.openweathermap.org/api_keys)
-6. Copy your default API key (or create a new one)
-7. Add to `.env` file:
-   ```
-   WEATHER_API_KEY=your_api_key_here
-   ```
+```bash
+streamlit run app.py
+```
 
-**Note**: Free tier includes:
-- 1,000 API calls/day
-- Current weather data
-- 5-day forecast
-- No credit card required
+**That's it!** The app will open at `http://localhost:8501` 🚀
 
-### 3️⃣ Setup Supabase (Optional)
+No configuration files needed. No API keys. Just install and run!
 
-Only needed if you want to persist weather data.
+---
 
-#### Create Supabase Project
+## 🔧 Optional: Supabase Setup
+
+Only needed if you want to persist weather data and predictions.
+
+### Create Supabase Project
 
 1. Go to [https://supabase.com](https://supabase.com)
 2. Click "Start your project"
@@ -53,20 +50,22 @@ Only needed if you want to persist weather data.
 6. Click "Create new project"
 7. Wait 2-3 minutes for setup
 
-#### Get API Credentials
+### Get API Credentials
 
 1. Click on "Settings" (gear icon)
 2. Go to "API" section
 3. Copy two values:
    - **Project URL**: `https://xxxxx.supabase.co`
    - **anon/public key**: `eyJxxxx...`
-4. Add to `.env` file:
-   ```
+4. Create `.env` file in the project root:
+   ```env
    SUPABASE_URL=https://xxxxx.supabase.co
    SUPABASE_KEY=eyJxxxx...
+   DEFAULT_CITY=London
+   DEFAULT_COUNTRY=UK
    ```
 
-#### Create Database Tables
+### Create Database Tables
 
 1. In Supabase dashboard, click "SQL Editor"
 2. Click "New Query"
@@ -111,106 +110,200 @@ CREATE INDEX idx_predictions_created ON weather_predictions(created_at);
 4. Click "RUN"
 5. Verify tables created: Go to "Table Editor" and see both tables
 
-### 4️⃣ Configure Environment
+---
 
-1. Copy the example environment file:
-   ```bash
-   cp .env.example .env
-   ```
+## 🌍 About Open-Meteo
 
-2. Edit `.env` with your values:
-   ```bash
-   nano .env  # or use any text editor
-   ```
+**Open-Meteo** is the weather data source for this app. It's completely free and open:
 
-3. Required configuration:
-   ```env
-   WEATHER_API_KEY=your_openweathermap_key_here
-   ```
+### What You Get:
+- ✅ **Current Weather**: Real-time conditions worldwide
+- ✅ **Forecasts**: Up to 16 days ahead
+- ✅ **Historical Data**: Weather archives going back decades
+- ✅ **No Authentication**: Zero API keys needed
+- ✅ **No Rate Limits**: Unlimited requests for non-commercial use
+- ✅ **High Quality**: Data from national weather services
 
-4. Optional configuration:
-   ```env
-   SUPABASE_URL=https://your-project.supabase.co
-   SUPABASE_KEY=your_supabase_anon_key
-   DEFAULT_CITY=London
-   DEFAULT_COUNTRY=UK
-   ```
+### Why It's Better:
+- **Accessibility**: Anyone can use it immediately
+- **Privacy**: No tracking, no accounts, no data collection
+- **Reliability**: Backed by official weather services
+- **Community**: Open-source and transparent
+- **Global**: Works for any location worldwide
 
-### 5️⃣ Run the Application
+Learn more: [open-meteo.com](https://open-meteo.com/)
 
-```bash
-streamlit run app.py
+---
+
+## 📝 Configuration (Optional)
+
+You can optionally create a `.env` file to customize default settings:
+
+```env
+# Default location (optional)
+DEFAULT_CITY=London
+DEFAULT_COUNTRY=UK
+
+# Supabase (optional - only if you want data persistence)
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_KEY=your-anon-key-here
 ```
 
-Or use the script:
+**Note:** All settings are optional! The app works perfectly without any `.env` file.
 
-```bash
-./run.sh
-```
+---
 
-The app will open at: `http://localhost:8501`
-
-## Troubleshooting
+## 🐛 Troubleshooting
 
 ### "ModuleNotFoundError"
 ```bash
 pip install -r requirements.txt
 ```
 
-### "API Key Invalid"
-- Check your OpenWeatherMap API key is correct
-- Wait 10-15 minutes after creating a new key (activation time)
-- Verify key in `.env` file has no quotes or spaces
+### "Could not find location"
+- Check your internet connection
+- Try using a major city name (e.g., "London", "New York")
+- Verify spelling and try without country code
+- The geocoding uses OpenStreetMap Nominatim
+
+### "No historical data"
+- Check internet connection
+- Verify the date range (Open-Meteo has data from 1940 onwards)
+- Try a different location
 
 ### "Database Connection Failed"
 - Supabase is optional - app works without it
 - Check SUPABASE_URL and SUPABASE_KEY in `.env`
 - Verify Supabase project is running
+- Ensure database tables are created
 
-### "No Weather Data"
-- Check internet connection
-- Verify API key is activated
-- Try a different city name
-- Check API quota (1000 calls/day free tier)
+### Geocoding Too Slow
+- First lookup may be slow due to geocoding
+- Subsequent requests for the same city are faster
+- Consider adding manual coordinates in the code if needed
 
-## Verification
+---
+
+## ✅ Verification
 
 After setup, verify everything works:
 
 1. ✅ App starts without errors
 2. ✅ Sidebar shows:
-   - Weather API: ✅
-   - Database: ✅ (if configured) or ❌ (if skipped)
+   - Weather API: ✅ (Open-Meteo - Public)
+   - Database: ✅ (if configured) or ❌ (Optional) (if skipped)
 3. ✅ Can fetch current weather
 4. ✅ Can generate predictions
+5. ✅ Predictions use REAL historical data
 
-## Next Steps
+---
+
+## 🚀 Next Steps
 
 1. Explore the **Current Weather** tab
 2. Generate predictions in **Predictions** tab
 3. View analytics in **Analytics** tab
 4. Customize settings in sidebar
+5. Try different cities worldwide
+6. Experiment with different Markov chain orders
+7. Adjust historical data range to see how it affects predictions
 
-## Need Help?
+---
+
+## 💡 Tips
+
+- **Historical Data**: More data (90-365 days) = better Markov chain training
+- **Markov Order**: Order 2 balances accuracy and complexity
+- **Prediction Days**: Start with 7 days for reasonable accuracy
+- **City Names**: Use English names (e.g., "Munich" not "München")
+- **Country Codes**: Use 2-letter ISO codes (US, UK, DE, FR, etc.)
+
+---
+
+## 🔬 Advanced Usage
+
+### Custom Temperature States
+
+Edit `markov_predictor.py` to customize temperature ranges:
+
+```python
+def _discretize_temperature(self, temp):
+    if temp < 0:
+        return "freezing"
+    elif temp < 10:
+        return "cold"
+    # Add your custom ranges here
+```
+
+### Adjust Prediction Algorithm
+
+Modify the Markov chain order in `config.py`:
+
+```python
+MARKOV_ORDER = 3  # Try third-order for more context
+```
+
+### Add More Weather Variables
+
+Extend the model to include:
+- Precipitation
+- Wind direction
+- Cloud cover
+- Pressure systems
+
+---
+
+## 📊 Data Quality
+
+**Open-Meteo Data Sources:**
+- NOAA (US)
+- DWD (Germany)
+- Météo-France (France)
+- And many other national weather services
+
+**Quality Assurance:**
+- Professional weather stations
+- Satellite data integration
+- Quality-controlled archives
+- Regular updates
+
+---
+
+## 🆘 Need Help?
 
 - Check the main [README.md](README.md)
 - Review error messages in the app
 - Check Streamlit logs in terminal
-- Verify `.env` file configuration
+- Visit [Open-Meteo Documentation](https://open-meteo.com/en/docs)
+- Open an issue on GitHub
 
-## Free Tier Limits
+---
 
-### OpenWeatherMap (Free)
-- 1,000 calls/day
-- 60 calls/minute
-- Current weather ✅
-- 5-day forecast ✅
-- Historical data ❌ (paid only)
+## 🎓 Educational Use
 
-### Supabase (Free)
-- 500 MB database
-- Unlimited API requests
-- 2 GB bandwidth/month
-- 50 MB file storage
+This app is perfect for:
+- Learning Markov chains
+- Understanding weather patterns
+- Teaching probability and statistics
+- Demonstrating API integration
+- Exploring time series prediction
 
-Both are more than enough for personal use!
+**No barriers to entry** - students can run it immediately without setting up accounts or managing API keys!
+
+---
+
+## 🌟 What Makes This Special
+
+Unlike other weather apps that require API keys:
+
+1. **Zero Friction**: Install and run, no configuration
+2. **Real Data**: Actual historical weather, not simulated
+3. **Educational**: Perfect for teaching and learning
+4. **Privacy**: No tracking or data collection
+5. **Free Forever**: No hidden costs or limitations
+
+---
+
+Made with ❤️ using Open-Meteo and Python
+
+**Start predicting weather in 30 seconds!** 🌤️
