@@ -17,7 +17,7 @@ class WeatherAPI:
         """Get latitude and longitude for a city"""
         try:
             location_query = f"{city}, {country_code}" if country_code else city
-            location = self.geocoder.geocode(location_query, timeout=10)
+            location = self.geocoder.geocode(location_query, timeout=15)
 
             if location:
                 return {
@@ -25,9 +25,30 @@ class WeatherAPI:
                     "lon": location.longitude,
                     "display_name": location.address
                 }
+
+            # If first attempt fails, try without country code
+            if country_code:
+                location = self.geocoder.geocode(city, timeout=15)
+                if location:
+                    return {
+                        "lat": location.latitude,
+                        "lon": location.longitude,
+                        "display_name": location.address
+                    }
+
             return None
         except (GeocoderTimedOut, GeocoderServiceError) as e:
-            print(f"Geocoding error: {e}")
+            # Try one more time without country code
+            try:
+                location = self.geocoder.geocode(city, timeout=15)
+                if location:
+                    return {
+                        "lat": location.latitude,
+                        "lon": location.longitude,
+                        "display_name": location.address
+                    }
+            except:
+                pass
             return None
 
     def get_current_weather(self, city, country_code=""):
@@ -146,8 +167,10 @@ class WeatherAPI:
             return historical_data
 
         except Exception as e:
-            print(f"Error fetching historical data: {e}")
-            return []
+            import traceback
+            error_msg = f"Error fetching historical data: {str(e)}\n{traceback.format_exc()}"
+            print(error_msg)  # For server logs
+            raise Exception(f"Failed to fetch historical data: {str(e)}")
 
     def _weather_code_to_condition(self, code):
         """Convert WMO weather code to condition string"""
