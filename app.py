@@ -235,18 +235,20 @@ def main():
     # Header
     st.markdown('<h1 class="main-header">🌤️ Weather Prediction with Markov Chains</h1>', unsafe_allow_html=True)
 
-    # Mobile install banner
-    if 'hide_install_banner' not in st.session_state:
-        st.session_state.hide_install_banner = False
+    # Mobile install banner (less intrusive, in sidebar)
+    with st.sidebar:
+        if 'hide_install_banner' not in st.session_state:
+            st.session_state.hide_install_banner = False
 
-    if not st.session_state.hide_install_banner:
-        col1, col2 = st.columns([4, 1])
-        with col1:
-            st.info("📱 **Mobile App:** Install this on your phone! See [MOBILE_INSTALL.md](MOBILE_INSTALL.md) for instructions.")
-        with col2:
-            if st.button("✕", key="close_banner"):
-                st.session_state.hide_install_banner = True
-                st.rerun()
+        if not st.session_state.hide_install_banner:
+            with st.expander("📱 Install as Mobile App"):
+                st.write("This app can be installed on your phone!")
+                st.write("**iPhone:** Safari → Share → Add to Home Screen")
+                st.write("**Android:** Chrome → Menu → Add to Home Screen")
+                st.write("See [MOBILE_INSTALL.md](MOBILE_INSTALL.md) for details")
+                if st.button("Got it, don't show again"):
+                    st.session_state.hide_install_banner = True
+                    st.rerun()
 
     # Sidebar
     with st.sidebar:
